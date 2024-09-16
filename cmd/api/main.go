@@ -55,3 +55,8 @@ type applicationDependencies struct {
     config serverConfig
     logger *slog.Logger
 }
+
+//This is the command to push an existing repository from the command line
+// git remote add origin https://github.com/Duane-Arzu/flower.git
+// git branch -M main
+// git push -u origin main
