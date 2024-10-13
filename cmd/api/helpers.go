@@ -7,6 +7,7 @@ import (
   "fmt"
   "io"
   "net/http"
+  "strings"
 )
 
 //create an envelope type
@@ -40,20 +41,28 @@ jsResponse = append(jsResponse, '\n')
 }
 
 func (a *applicationDependencies)readJSON(w http.ResponseWriter,
-    r *http.Request
-    destination any) error { 
+    r *http.Request, destination any) error { 
 
-err := json.NewDecoder(r.Body).Decode(destination) 
+//------------------------------
+//what is the max size of the request body (250kb seems reasonable)
+maxBytes := 256_000
+r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
+//our decoder will check for unknown fields
+dec := json.NewDecoder(r.Body)
+dec.DisallowUnknownFields()
+//let's start decoding
+err := dec.Decode(destination)
+
 if err != nil {            
-// check for the different errors 
+//check for the different errors 
 var syntaxError *json.SyntaxError
 var unmarshalTypeError *json.UnmarshalTypeError
 var invalidUnmarshalError *json.InvalidUnmarshalError
+var MaxBytesError *http.MaxBytesError
 
 switch {
 case errors.As(err, &syntaxError):
-return fmt.Errorf("the body contains badly-formed JSON
-(at character %d)", syntaxError.Offset)
+return fmt.Errorf("the body contains badly-formed JSON (at character %d)", syntaxError.Offset)
 
 // Decode can also send back an io error message
 case errors.Is(err, io.ErrUnexpectedEOF):
@@ -61,25 +70,40 @@ case errors.Is(err, io.ErrUnexpectedEOF):
 
 case errors.As(err, &unmarshalTypeError):
     if unmarshalTypeError.Field != "" {
-       return fmt.Errorf("the body contains the incorrect 
-                          JSON type for field %q",
-                          unmarshalTypeError.Field)
+       return fmt.Errorf("the body contains the incorrect JSON type for field %q", unmarshalTypeError.Field)
     }
-    return fmt.Errorf("the body contains the incorrect  JSON
-                       type (at character %d)", 
-                       unmarshalTypeError.Offset)
-                    case errors.Is(err, io.EOF):
-                        return errors.New("the body must not be empty")
+    return fmt.Errorf("the body contains the incorrect  JSON type (at character %d)", unmarshalTypeError.Offset)
+                   
+case errors.Is(err, io.EOF):
+    return errors.New("the body must not be empty")
+
+// check for unknown fields
+case strings.HasPrefix(err.Error(), "json: unknown field "):
+    fieldName := strings.TrimPrefix(err.Error(), 
+                                    "json: unknown field ")
+    return fmt.Errorf("body contains unknown key %s", fieldName)
+
+ // does the body exceed our limit of 250KB?
+ case errors.As(err, &MaxBytesError):
+     return fmt.Errorf("the body must not be larger that %d bytes", MaxBytesError.Limit)
+
+//  case errors.Is(err.io.EOF):
+//     return errors.New("the body must not be empty")
+
+// the programmer messed up
+case errors.As(err, &invalidUnmarshalError):
+panic(err)
+// some other type of error
+default:
+return err
+    }
+ }
+
+ err = dec.Decode(&struct{}{})
+ if !errors.Is(err, io.EOF) {
+    return errors.New("body must only contain a single JSON value")
+ }
           
-                   // the programmer messed up
-                   case errors.As(err, &invalidUnmarshalError):
-                        panic(err)
-                  // some other type of error
-                   default:
-                        return err
-                  }
-              }
-          
-            return nil
-          }
+return nil
+}
           
