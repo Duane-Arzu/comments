@@ -2,7 +2,7 @@
 package main
 
 import (
-  "encoding/json"
+  
   "fmt"
   "net/http"
   // import the data package which contains the definition for Comment
