@@ -60,6 +60,7 @@ logger.Info("database connection pool established")
 appInstance := &applicationDependencies {
     config: settings,
     logger: logger,
+    commentModel: data.CommentModel {DB: db}
 }
 
 apiServer := &http.Server {
@@ -129,6 +130,7 @@ type serverConfig struct {
 type applicationDependencies struct {
     config serverConfig
     logger *slog.Logger
+    commentModel data.CommentModel
 }
 
 
