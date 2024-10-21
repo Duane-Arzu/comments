@@ -1,4 +1,4 @@
-//Filename: cmd/api/middleware.go
+// Filename: cmd/api/middleware.go
 package main
 
 import (
@@ -6,18 +6,17 @@ import (
 	"net/http"
 )
 
-func (a *applicationDependencies)recoverPanic(next http.Handler) http.Handler  {
-   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-   // defer will be called when the stack unwinds
-       defer func() {
-           // recover() checks for panics
-           err := recover();
-           if err != nil {
-               w.Header().Set("Connection", "close")
-               a.serveErrorResponse(w, r, fmt.Errorf("%s", err))
-           }
-       }()
-       next.ServeHTTP(w,r)
-   })  
+func (a *applicationDependencies) recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// defer will be called when the stack unwinds
+		defer func() {
+			// recover() checks for panics
+			err := recover()
+			if err != nil {
+				w.Header().Set("Connection", "close")
+				a.serveErrorResponse(w, r, fmt.Errorf("%s", err))
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
 }
-
