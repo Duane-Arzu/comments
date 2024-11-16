@@ -1,6 +1,5 @@
 module github.com/Duane-Arzu/comments
 
-<<<<<<< HEAD
 go 1.23.3
 
 require (
@@ -14,11 +13,4 @@ require (
 require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/mail.v2 v2.3.1 // indirect
-=======
-go 1.22.6
-
-require (
-	github.com/julienschmidt/httprouter v1.3.0
-	github.com/lib/pq v1.10.9
->>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 )
