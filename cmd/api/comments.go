@@ -11,6 +11,7 @@ import (
 	_ "github.com/Duane-Arzu/comments/internal/validator"
 )
 
+<<<<<<< HEAD
 var incomingData struct {
 	Content *string `json:"content"`
 	Author  *string `json:"author"`
@@ -19,11 +20,22 @@ var incomingData struct {
 func (a *applicationDependencies) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// create a struct to hold a comment
 	// we use struct tags to make the names display in lowercase
+=======
+func (a *applicationDependences) createCommentHandler(w http.ResponseWriter, r *http.Request) {
+	//create a struct to hold a comment
+	//we use struct tags [` `] to make the names display in lowercase
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	var incomingData struct {
 		Content string `json:"content"`
 		Author  string `json:"author"`
 	}
+<<<<<<< HEAD
 	// perform the decoding
+=======
+
+	//perform decoding
+
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	err := a.readJSON(w, r, &incomingData)
 	if err != nil {
 		a.badRequestResponse(w, r, err)
@@ -34,6 +46,7 @@ func (a *applicationDependencies) createCommentHandler(w http.ResponseWriter, r 
 		Content: incomingData.Content,
 		Author:  incomingData.Author,
 	}
+<<<<<<< HEAD
 	// Initialize a Validator instance
 	v := validator.New()
 
@@ -42,17 +55,40 @@ func (a *applicationDependencies) createCommentHandler(w http.ResponseWriter, r 
 		a.failedValidationResponse(w, r, v.Errors) // implemented later
 		return
 	}
+=======
+
+	v := validator.New()
+	//do validation
+	data.ValidateComment(v, comment)
+	if !v.IsEmpty() {
+		a.failedValidationResponse(w, r, v.Errors) //implemented later
+		return
+	}
+
+	//add comment to the comments table in database
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	err = a.commentModel.Insert(comment)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return
 	}
 
+<<<<<<< HEAD
 	fmt.Fprintf(w, "%+v\n", incomingData) // delete this
 	// Set a Location header. The path to the newly created comment
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/comments/%d", comment.ID))
 
+=======
+	//for now display the result
+	// fmt.Fprintf(w, "%+v\n", incomingData)
+
+	//set a location header, the path to the newly created comments
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/comments/%d", comment.ID))
+
+	//send a json response with a 201 (new reseource created) status code
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	data := envelope{
 		"comment": comment,
 	}
@@ -61,6 +97,7 @@ func (a *applicationDependencies) createCommentHandler(w http.ResponseWriter, r 
 		a.serverErrorResponse(w, r, err)
 		return
 	}
+<<<<<<< HEAD
 
 	// for now display the result
 	fmt.Fprintf(w, "%+v\n", incomingData)
@@ -69,11 +106,22 @@ func (a *applicationDependencies) createCommentHandler(w http.ResponseWriter, r 
 func (a *applicationDependencies) displayCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the id from the URL /v1/comments/:id so that we
 	// can use it to query teh comments table. We will
+=======
+}
+
+func (a *applicationDependences) fetchCommentByID(w http.ResponseWriter, r *http.Request) (*data.Comment, error) {
+	// Get the id from the URL /v1/comments/:id so that we
+	// can use it to query the comments table. We will
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	// implement the readIDParam() function later
 	id, err := a.readIDParam(r)
 	if err != nil {
 		a.notFoundResponse(w, r)
+<<<<<<< HEAD
 		return
+=======
+
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	}
 
 	// Call Get() to retrieve the comment with the specified id
@@ -85,9 +133,23 @@ func (a *applicationDependencies) displayCommentHandler(w http.ResponseWriter, r
 		default:
 			a.serverErrorResponse(w, r, err)
 		}
+<<<<<<< HEAD
 		return
 	}
 
+=======
+
+	}
+	return comment, nil
+}
+
+func (a *applicationDependences) displayCommentHandler(w http.ResponseWriter, r *http.Request) {
+
+	comment, err := a.fetchCommentByID(w, r)
+	if err != nil {
+		return
+	}
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	// display the comment
 	data := envelope{
 		"comment": comment,
@@ -100,6 +162,7 @@ func (a *applicationDependencies) displayCommentHandler(w http.ResponseWriter, r
 
 }
 
+<<<<<<< HEAD
 func (a *applicationDependencies) updateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the ID from the URL
 	id, err := a.readIDParam(r)
@@ -120,21 +183,53 @@ func (a *applicationDependencies) updateCommentHandler(w http.ResponseWriter, r 
 	}
 
 	// Decode the incoming JSON
+=======
+func (a *applicationDependences) updateCommentHandler(w http.ResponseWriter, r *http.Request) {
+
+	comment, err := a.fetchCommentByID(w, r)
+	if err != nil {
+		return
+	}
+
+	// Use our temporary incomingData struct to hold the data
+	// Note: I have changed the types to pointer to differentiate
+	// between the client leaving a field empty intentionally
+	// and the field not needing to be updated
+	var incomingData struct {
+		Content *string `json:"content"`
+		Author  *string `json:"author"`
+	}
+
+	// perform the decoding
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	err = a.readJSON(w, r, &incomingData)
 	if err != nil {
 		a.badRequestResponse(w, r, err)
 		return
 	}
+<<<<<<< HEAD
 
 	// Update the comment fields based on the incoming data
 	if incomingData.Content != nil {
 		comment.Content = *incomingData.Content
 	}
+=======
+	// We need to now check the fields to see which ones need updating
+	// if incomingData.Content is nil, no update was provided
+	if incomingData.Content != nil {
+		comment.Content = *incomingData.Content
+	}
+	// if incomingData.Author is nil, no update was provided
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	if incomingData.Author != nil {
 		comment.Author = *incomingData.Author
 	}
 
+<<<<<<< HEAD
 	// Validate the updated comment
+=======
+	// Before we write the updates to the DB let's validate
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	v := validator.New()
 	data.ValidateComment(v, comment)
 	if !v.IsEmpty() {
@@ -142,14 +237,21 @@ func (a *applicationDependencies) updateCommentHandler(w http.ResponseWriter, r 
 		return
 	}
 
+<<<<<<< HEAD
 	// Perform the update in the database
+=======
+	// perform the update
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	err = a.commentModel.Update(comment)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
 		return
 	}
+<<<<<<< HEAD
 
 	// Respond with the updated comment
+=======
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	data := envelope{
 		"comment": comment,
 	}
@@ -158,28 +260,48 @@ func (a *applicationDependencies) updateCommentHandler(w http.ResponseWriter, r 
 		a.serverErrorResponse(w, r, err)
 		return
 	}
+<<<<<<< HEAD
 }
 
 func (a *applicationDependencies) deleteCommentHandler(w http.ResponseWriter, r *http.Request) {
+=======
+
+}
+
+func (a *applicationDependences) deleteCommentHandler(w http.ResponseWriter, r *http.Request) {
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	id, err := a.readIDParam(r)
 	if err != nil {
 		a.notFoundResponse(w, r)
 		return
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	err = a.commentModel.Delete(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
+<<<<<<< HEAD
 			a.IDnotFound(w, r, id) // Pass the ID to the custom message handler
+=======
+			a.notFoundResponse(w, r)
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 		default:
 			a.serverErrorResponse(w, r, err)
 		}
 		return
 	}
 
+<<<<<<< HEAD
 	data := envelope{
 		"message": "comment successfully deleted",
+=======
+	//diplay the comment
+	data := envelope{
+		"message": "comment deleted successfully",
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	}
 	err = a.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {
@@ -187,14 +309,22 @@ func (a *applicationDependencies) deleteCommentHandler(w http.ResponseWriter, r 
 	}
 }
 
+<<<<<<< HEAD
 func (a *applicationDependencies) listCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	// Create a struct to hold the query parameters
 	// Later on we will add fields for pagination and sorting (filters)
 	var queryParametersData struct {
+=======
+func (a *applicationDependences) listCommentHandler(w http.ResponseWriter, r *http.Request) {
+	//create a struct to hold the query parameters
+	//Later, fields will be added for pagination and sorting (filters)
+	var queryParameterData struct {
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 		Content string
 		Author  string
 		data.Filters
 	}
+<<<<<<< HEAD
 	// get the query parameters from the URL
 	queryParameters := r.URL.Query()
 	// Load the query parameters into our struct
@@ -222,11 +352,30 @@ func (a *applicationDependencies) listCommentsHandler(w http.ResponseWriter, r *
 
 	// Check if our filters are valid
 	data.ValidateFilters(v, queryParametersData.Filters)
+=======
+
+	//get query parameters from url
+	queryParameter := r.URL.Query()
+
+	//load the query parameters into the created struct
+	queryParameterData.Content = a.getSingleQueryParameter(queryParameter, "content", "")
+	queryParameterData.Author = a.getSingleQueryParameter(queryParameter, "author", "")
+
+	// Create a new validator instance
+	v := validator.New()
+
+	queryParameterData.Filters.Page = a.getSingleIntegerParameter(queryParameter, "page", 1, v)
+	queryParameterData.Filters.PageSize = a.getSingleIntegerParameter(queryParameter, "page_size", 10, v)
+
+	// Check if our filters are valid
+	data.ValidateFilters(v, queryParameterData.Filters)
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	if !v.IsEmpty() {
 		a.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
+<<<<<<< HEAD
 	comments, metadata, err := a.commentModel.GetAll(
 		queryParametersData.Content,
 		queryParametersData.Author,
@@ -239,9 +388,30 @@ func (a *applicationDependencies) listCommentsHandler(w http.ResponseWriter, r *
 	data := envelope{
 		"comments":  comments,
 		"@metadata": metadata,
+=======
+	//call GetAll to retrieve all comments of the DB
+	comments, err := a.commentModel.GetAll(queryParameterData.Content, queryParameterData.Author, queryParameterData.Filters)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			a.notFoundResponse(w, r)
+			return
+		default:
+			a.serverErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	data := envelope{
+		"comments": comments,
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	}
 	err = a.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		a.serverErrorResponse(w, r, err)
+<<<<<<< HEAD
+=======
+		return
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 	}
 }

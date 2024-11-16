@@ -1,6 +1,7 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"errors"
 	"fmt"
 	"net/http"
@@ -24,12 +25,27 @@ func (a *applicationDependencies) recoverPanic(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				w.Header().Set("Connection", "close")
+=======
+	"fmt"
+	"net/http"
+)
+
+func (a *applicationDependences) recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//defer will be called when the stack unwinds
+		defer func() {
+			//recover from panic
+			err := recover()
+			if err != nil {
+				w.Header().Set("Connection", "Close")
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
 				a.serverErrorResponse(w, r, fmt.Errorf("%s", err))
 			}
 		}()
 		next.ServeHTTP(w, r)
 	})
 }
+<<<<<<< HEAD
 
 func (a *applicationDependencies) rateLimit(next http.Handler) http.Handler {
 
@@ -161,3 +177,5 @@ func (a *applicationDependencies) requireActivatedUser(next http.HandlerFunc) ht
 	// Chain the activated user check after ensuring the user is authenticated
 	return a.requireAuthenticatedUser(fn)
 }
+=======
+>>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
