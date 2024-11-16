@@ -116,12 +116,16 @@ func (a *applicationDependencies) readIDParam(r *http.Request) (int64, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 
 	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
+	if err != nil || id < 1 {
 		return 0, errors.New("invalid id parameter")
-=======
-func (a *applicationDependences) getSingleQueryParameter(queryParameter url.Values, key string, defaultValue string) string {
-	//url.values is a key:value hash map of the query parameters
-	result := queryParameter.Get(key)
->>>>>>> e552bbb7e42555c25294bebb63c793b53c7b49ef
+	}
+
+	return id, nil
+}
+
+func (a *applicationDependencies) getSingleQueryParameter(queryParameters url.Values, key string, defaultValue string) string {
+
+	result := queryParameters.Get(key)
 	if result == "" {
 		return defaultValue
 	}

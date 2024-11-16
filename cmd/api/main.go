@@ -35,6 +35,7 @@ type serverConfig struct {
 		sender   string
 	}
 }
+
 type applicationDependencies struct {
 	config       serverConfig
 	logger       *slog.Logger
@@ -68,6 +69,32 @@ func main() {
 
 	flag.StringVar(&setting.smtp.sender, "smtp-sender", "Comments Community <no-reply@commentscommunity.alexperaza.net>", "SMTP sender")
 
+	flag.Parse()
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	// the call to openDB() sets up our connection pool
+	db, err := openDB(setting)
+	if err != nil {
+		logger.Error("Database connection failed")
+		os.Exit(1)
+	}
+	// release the database resources before exiting
+	defer db.Close()
+
+	logger.Info("Database connection pool established")
+
+	appInstance := &applicationDependencies{
+		config:       setting,
+		logger:       logger,
+		userModel:    data.UserModel{DB: db},
+		commentModel: data.CommentModel{DB: db},
+		tokenModel:   data.TokenModel{DB: db},
+		mailer: mailer.New(setting.smtp.host, setting.smtp.port,
+			setting.smtp.username, setting.smtp.password, setting.smtp.sender),
+	}
+
+	err = appInstance.serve()
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
